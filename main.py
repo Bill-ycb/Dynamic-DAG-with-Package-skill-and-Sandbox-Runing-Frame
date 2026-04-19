@@ -19,7 +19,6 @@ async def main():
     2. 打包清洗：拿到论文后，必须生成一个 package 节点，将以下逻辑打包顺序执行：
        - 提取论文标题和摘要。
        - 拼接成 Markdown 列表格式。
-       - ⚠️ 陷阱测试：故意在代码里写一个 KeyError（例如尝试获取 data['invalid_key']）来触发自愈。
        - 将最终的 Markdown 文本赋值给 final_output。
 
     【并发分支 2：独立工程侦察】

@@ -1,18 +1,23 @@
 # skills/research_tools.py
 import requests
 import xml.etree.ElementTree as ET
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 def search_arxiv(query: str, max_results: int = 3) -> dict:
     """真实技能：检索 ArXiv 上的最新学术论文，返回结构化字典"""
     print(f"    🎓 [Skill: ArXiv] 正在检索学术论文: '{query}' ...")
     url = f"http://export.arxiv.org/api/query?search_query=all:{query}&start=0&max_results={max_results}"
     
+    proxies = {
+        "http": os.getenv("HTTP_PROXY"),
+        "https": os.getenv("HTTPS_PROXY"),
+    }
+    
     try:
-        proxies = {
-            "http":"http://127.0.0.1:7892",
-            "https": "http://127.0.0.1:7892",
-        }
-        response = requests.get(url, timeout=10, proxies=proxies)
+        response = requests.get(url, timeout=int(os.getenv("TIMEOUT", "10")), proxies=proxies)
         if response.status_code != 200:
             return {"status": "error", "message": f"ArXiv 请求失败，状态码: {response.status_code}", "results": []}
             
@@ -45,8 +50,13 @@ def search_github(query: str, max_results: int = 3) -> dict:
     url = f"https://api.github.com/search/repositories?q={query}&sort=stars&order=desc&per_page={max_results}"
     headers = {"Accept": "application/vnd.github.v3+json"}
     
+    proxies = {
+        "http": os.getenv("HTTP_PROXY"),
+        "https": os.getenv("HTTPS_PROXY"),
+    }
+    
     try:
-        response = requests.get(url, headers=headers, timeout=10)
+        response = requests.get(url, headers=headers, timeout=int(os.getenv("TIMEOUT", "10")), proxies=proxies)
         if response.status_code != 200:
             return {"status": "error", "message": f"GitHub 请求失败，状态码: {response.status_code}", "results": []}
             

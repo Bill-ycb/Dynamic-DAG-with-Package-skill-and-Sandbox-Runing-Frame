@@ -1,14 +1,18 @@
 # core/planner_llm.py
 import json
+import os
+from dotenv import load_dotenv
 from openai import OpenAI
+
+load_dotenv()
 
 class PlannerLLM:
     def __init__(self):
         self.client = OpenAI(
-            api_key="sk-b186038b69864b678da78736993ac0f3", 
-            base_url="https://dashscope.aliyuncs.com/compatible-mode/v1"
+            api_key=os.getenv("OPENAI_API_KEY"), 
+            base_url=os.getenv("OPENAI_BASE_URL")
         )
-        self.model = "qwen3.6-plus-2026-04-02"
+        self.model = os.getenv("OPENAI_MODEL")
         self.tools = [
             {
                 "type": "function",

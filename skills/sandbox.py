@@ -4,14 +4,18 @@ import io
 import traceback
 import copy
 import re  # 🚀 新增正则表达式库，用于强力清洗大模型输出
+import os
+from dotenv import load_dotenv
 from openai import OpenAI
+
+load_dotenv()
 
 def fix_code_with_reflexion(failed_code: str, error_trace: str, intent: str) -> str:
     """内部的反思大脑：专门负责看懂报错并修 Bug，自带结果清洗器"""
     print(f"      📞 [Reflexion API] 正在将报错信息发送给反思大脑...")
     client = OpenAI(
-        api_key="sk-b186038b69864b678da78736993ac0f3",
-        base_url="https://dashscope.aliyuncs.com/compatible-mode/v1"
+        api_key=os.getenv("OPENAI_API_KEY"),
+        base_url=os.getenv("OPENAI_BASE_URL")
     )
     
     # 🧠 优化 Prompt：引导它使用标准的 Markdown 格式包裹代码
@@ -28,7 +32,7 @@ def fix_code_with_reflexion(failed_code: str, error_trace: str, intent: str) -> 
 【严格输出规则】：你可以简短解释，但修复后的完整 Python 代码必须且只能放在一对 ```python 和 ``` 之间！千万不要漏掉代码块标记！"""
     
     response = client.chat.completions.create(
-        model="qwen-max",
+        model=os.getenv("OPENAI_MODEL"),
         messages=[{"role": "user", "content": prompt}],
         temperature=0.1
     )
@@ -47,8 +51,10 @@ def fix_code_with_reflexion(failed_code: str, error_trace: str, intent: str) -> 
         print(f"      ⚠️ [清洗器警告] 未检测到标准 Markdown 代码块，尝试原样返回。")
         return reply_text.strip()
 
-def run_python_sandbox(code: str, deps_data: dict, intent: str = "处理数据", max_retries: int = 3) -> str:
+def run_python_sandbox(code: str, deps_data: dict, intent: str = "处理数据", max_retries: int = None) -> str:
     """具备状态快照与 Reflexion 自愈能力的动态沙盒"""
+    if max_retries is None:
+        max_retries = int(os.getenv("MAX_RETRIES", "3"))
     print("\n" + "-"*40)
     print(f"📦 [沙盒节点启动] 意图: {intent}")
     
